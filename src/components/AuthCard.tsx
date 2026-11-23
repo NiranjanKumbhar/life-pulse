@@ -32,8 +32,8 @@ export function AuthCard() {
     setOauthLoading(true);
     try {
       const supabase = createClient();
-      const nextParam = mode === "signup" ? "/setup&consent=accepted" : "/pulse";
-      const redirectTo = `${window.location.origin}/auth/callback?next=${nextParam}`;
+      // Keep redirectTo free of query params so Supabase exact-match allowlist always accepts it
+      const redirectTo = `${window.location.origin}/auth/callback`;
 
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: "google",
