@@ -30,6 +30,9 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Unit Tests
+        run: pnpm test
+
       - name: Build
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co

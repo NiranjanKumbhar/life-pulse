@@ -13,8 +13,9 @@ Use clear, imperative commit messages:
 - `fix(rls): ensure household_invites update checks owner role`
 - `chore(ci): add typecheck step to GitHub Actions`
 
-## Security & Privacy Rules (Mandatory)
-1. **Never** commit `.env.local` or any `service_role` / secret key.
-2. **Never** store raw email bodies in Postgres or logs.
-3. Every new table in `public` **must** enable RLS (`TO authenticated`, `(select auth.uid())`) and pass Supabase Security Advisors.
-4. Every new feature gated by subscription tier **must** check `src/lib/entitlements.ts` rather than hardcoding plan checks.
+## Security, Testing & Privacy Rules (Mandatory)
+1. **Always add/update unit tests** (`pnpm test`) whenever you complete any feature or bug fix.
+2. **Never** commit `.env.local` or any `service_role` / secret key.
+3. **Never** store raw email bodies in Postgres or logs.
+4. Every new table in `public` **must** enable RLS (`TO authenticated`, `(select auth.uid())`) and pass Supabase Security Advisors.
+5. Every new feature gated by subscription tier **must** check `src/lib/entitlements.ts` rather than hardcoding plan checks.

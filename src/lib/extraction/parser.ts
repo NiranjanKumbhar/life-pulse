@@ -106,7 +106,9 @@ export function parseInboundInMemory(payload: InboundPayload): {
     lower
   );
 
-  const orderMatch = combined.match(/(?:order\s*#?|ref\s*#?)\s*([A-Z0-9-]{5,24})/i);
+  const orderMatch = combined.match(
+    /(?:(?:order|ref|reference)\s*(?:number|no\.?|id|#|:)\s*|#)\s*([A-Z0-9-]*\d[A-Z0-9-]{3,23})/i
+  );
   const orderNumber = orderMatch?.[1] ?? null;
 
   let itemType: "subscription" | "order_return" | "bill_renewal" | "warranty_receipt" =
