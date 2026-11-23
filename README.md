@@ -35,5 +35,9 @@ pnpm lint
 pnpm build
 ```
 
-## Contributing
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for branching strategy, conventional commits, and PR checklist.
+## Documentation
+| Document | What It Covers |
+| :--- | :--- |
+| [docs/PRODUCT_VISION.md](./docs/PRODUCT_VISION.md) | Problem, privacy-first moat, US/UK/EU → India strategy, subscription tiers, and 3-phase roadmap |
+| [docs/DATA_MODEL_AND_EXTRACTION.md](./docs/DATA_MODEL_AND_EXTRACTION.md) | ER diagram, Postgres schema, Supabase RLS security, GDPR compliance, and Zod extraction contract |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Branching strategy, conventional commits, and mandatory privacy/security PR checklist |
