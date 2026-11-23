@@ -9,6 +9,9 @@ import {
   Archive,
   Sparkles,
   ArrowRight,
+  Send,
+  Copy,
+  Check,
 } from "lucide-react";
 import type { Database } from "@/types/database";
 import { daysUntil, formatMinorAmount } from "@/lib/extraction/schema";
@@ -30,6 +33,50 @@ const TYPE_LABELS: Record<string, { label: string; color: string }> = {
 export function PulseFeed({ initialItems, locale }: PulseFeedProps) {
   const [items, setItems] = useState<LifeItemRow[]>(initialItems);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [draftPanel, setDraftPanel] = useState<{
+    itemId: string;
+    subject: string;
+    body?: string;
+    upgradeMessage?: string;
+  } | null>(null);
+  const [copiedDraft, setCopiedDraft] = useState(false);
+
+  async function requestDraft(item: LifeItemRow) {
+    setBusyId(item.id);
+    const actionType =
+      item.item_type === "order_return"
+        ? "start_return"
+        : item.item_type === "bill_renewal"
+          ? "dispute_price_hike"
+          : item.item_type === "warranty_receipt"
+            ? "warranty_claim"
+            : "cancel_subscription";
+    try {
+      const res = await fetch(`/api/items/${item.id}/action`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ actionType }),
+      });
+      const json = await res.json();
+      if (res.status === 402) {
+        setDraftPanel({
+          itemId: item.id,
+          subject: json.previewSubject ?? "Solo Pro Draft",
+          upgradeMessage: json.error,
+        });
+        return;
+      }
+      if (res.ok && json.action) {
+        setDraftPanel({
+          itemId: item.id,
+          subject: json.action.draft_subject,
+          body: json.action.draft_body,
+        });
+      }
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   async function runAction(
     id: string,
@@ -176,7 +223,45 @@ export function PulseFeed({ initialItems, locale }: PulseFeedProps) {
             <Archive className="h-3.5 w-3.5" />
             Vault
           </button>
+          <button
+            type="button"
+            disabled={isBusy}
+            onClick={() => requestDraft(item)}
+            className="ml-auto inline-flex items-center gap-1 rounded-lg border border-sky-200 bg-sky-50 px-2.5 py-1.5 text-xs font-semibold text-sky-900 hover:bg-sky-100 disabled:opacity-50"
+          >
+            <Send className="h-3 w-3" />
+            Draft Email
+          </button>
         </div>
+
+        {draftPanel?.itemId === item.id && (
+          <div className="mt-3 rounded-xl border border-sky-200 bg-sky-50/60 p-3 text-xs">
+            <p className="font-semibold text-slate-900">{draftPanel.subject}</p>
+            {draftPanel.upgradeMessage ? (
+              <p className="mt-1 text-slate-600">{draftPanel.upgradeMessage}</p>
+            ) : (
+              <>
+                <pre className="mt-2 whitespace-pre-wrap font-sans text-slate-700">
+                  {draftPanel.body}
+                </pre>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(
+                      `Subject: ${draftPanel.subject}\n\n${draftPanel.body ?? ""}`
+                    );
+                    setCopiedDraft(true);
+                    setTimeout(() => setCopiedDraft(false), 2000);
+                  }}
+                  className="mt-2 inline-flex items-center gap-1 rounded-lg bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white"
+                >
+                  {copiedDraft ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                  {copiedDraft ? "Copied Draft" : "Copy Email Draft"}
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </article>
     );
   }
