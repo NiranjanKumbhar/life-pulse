@@ -1,0 +1,18 @@
+{
+  "name": "Life Pulse — Privacy-First Life Admin Autopilot",
+  "short_name": "Life Pulse",
+  "description": "Zero-input personal & household life admin autopilot. Track subscriptions, return windows, renewals, and warranties privately.",
+  "start_url": "/pulse",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f172a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
