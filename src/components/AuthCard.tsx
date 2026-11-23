@@ -14,8 +14,39 @@ export function AuthCard() {
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [acceptParsing, setAcceptParsing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  async function handleGoogleAuth() {
+    setError(null);
+    setMessage(null);
+
+    if (mode === "signup" && (!acceptPrivacy || !acceptParsing)) {
+      setError(
+        "Please confirm both GDPR privacy consents before signing up with Google."
+      );
+      return;
+    }
+
+    setOauthLoading(true);
+    try {
+      const supabase = createClient();
+      const nextParam = mode === "signup" ? "/setup&consent=accepted" : "/pulse";
+      const redirectTo = `${window.location.origin}/auth/callback?next=${nextParam}`;
+
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+        },
+      });
+      if (oauthError) throw oauthError;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Google sign-in failed");
+      setOauthLoading(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -110,6 +141,47 @@ export function AuthCard() {
         >
           Sign In
         </button>
+      </div>
+
+      <div className="mb-4">
+        <button
+          type="button"
+          disabled={oauthLoading || loading}
+          onClick={handleGoogleAuth}
+          className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 shadow-2xs transition hover:bg-slate-50 disabled:opacity-60"
+        >
+          <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              fill="#4285F4"
+              d="M23.49 12.27c0-.79-.07-1.54-.2-2.27H12v4.51h6.47a5.53 5.53 0 0 1-2.4 3.63v3.01h3.88c2.27-2.09 3.54-5.17 3.54-8.88Z"
+            />
+            <path
+              fill="#34A853"
+              d="M12 24c3.24 0 5.95-1.07 7.94-2.91l-3.88-3.01c-1.07.72-2.45 1.15-4.06 1.15-3.12 0-5.77-2.11-6.72-4.96H1.28v3.11A12 12 0 0 0 12 24Z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M5.28 14.27A7.2 7.2 0 0 1 4.9 12c0-.79.14-1.56.38-2.27V6.62H1.28A12 12 0 0 0 0 12c0 1.94.46 3.77 1.28 5.38l4-3.11Z"
+            />
+            <path
+              fill="#EA4335"
+              d="M12 4.77c1.76 0 3.34.61 4.58 1.8l3.44-3.44C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.28 6.62l4 3.11c.95-2.85 3.6-4.96 6.72-4.96Z"
+            />
+          </svg>
+          <span>
+            {oauthLoading
+              ? "Redirecting to Google..."
+              : mode === "signup"
+                ? "Sign up with Google"
+                : "Sign in with Google"}
+          </span>
+        </button>
+
+        <div className="my-4 flex items-center gap-3 text-[11px] font-medium text-slate-400">
+          <div className="h-px flex-1 bg-slate-200" />
+          <span>or continue with email</span>
+          <div className="h-px flex-1 bg-slate-200" />
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
